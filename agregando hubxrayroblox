@@ -1,0 +1,65 @@
+-- Hub principal
+local hub = script.Parent
+local botonCerrar = hub:WaitForChild("Cerrar")
+local botonMinimizar = hub:WaitForChild("Minimizar")
+local botonXray = hub:WaitForChild("Xray")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Movimiento libre
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    hub.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+hub.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = hub.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+hub.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Función cerrar
+botonCerrar.MouseButton1Click:Connect(function()
+    hub.Visible = false
+end)
+
+-- Función minimizar con animación
+local minimizado = false
+botonMinimizar.MouseButton1Click:Connect(function()
+    local objetivo = minimizado and UDim2.new(0, 300, 0, 300) or UDim2.new(0, 50, 0, 50)
+    local tween = TweenService:Create(hub, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = objetivo})
+    tween:Play()
+    minimizado = not minimizado
+end)
+
+-- X-Ray
+local xrayActivo = false
+local coloresMinerales = {
+    ["Rubi"] = Color3.fromRGB(255,0,0),
+    ["Diamante"] = Color3.fromRGB(173,216,230),
+    ["Carbon"] = Color3.fromRGB(0,0,0),
+    ["Hierro"] = Color3.fromRGB(255,255,255),
+    ["Oro"] = Color3.fromRGB(255,255
